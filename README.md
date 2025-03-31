@@ -4,10 +4,10 @@ A simple utility that converts clipboard images to markdown text using OpenAI's 
 
 ## Features
 
-- Takes an image from your system clipboard
+- Takes an image from your system clipboard or a file
 - Sends it to OpenAI's GPT-4 Vision API
 - Converts the image content to markdown format
-- Copies the markdown back to your clipboard for easy pasting
+- Copies the markdown back to your clipboard or saves to a file
 - Supports multiple OpenAI models with automatic fallback
 - Saves your preferences for future use
 
@@ -47,7 +47,7 @@ A simple utility that converts clipboard images to markdown text using OpenAI's 
 1. Copy an image to your clipboard (e.g., take a screenshot)
 2. Run the script:
    ```bash
-   ./img2markdown.py
+   source .venv/bin/activate && ./img2markdown.py
    ```
 3. The markdown content will be copied to your clipboard, ready to paste
 
@@ -73,6 +73,15 @@ The script supports several command-line options:
 
 # Set maximum token limit for response
 ./img2markdown.py --max-tokens 2048
+
+# Use an image file instead of clipboard
+./img2markdown.py --file path/to/image.png
+
+# Save output to a file instead of clipboard
+./img2markdown.py --output path/to/output.md
+
+# Combine options
+./img2markdown.py --file image.png --output result.md --model gpt-4-turbo
 ```
 
 ### Model Fallback
@@ -97,7 +106,7 @@ Your settings are saved in `~/.config/img2markdown/config.json` when you use the
 3. Add a "Run Shell Script" action
 4. Enter the full path to the script with any desired options:
    ```bash
-   /Users/your_username/path/to/img2markdown.py --model gpt-4-turbo
+   cd /path/to/project && source .venv/bin/activate && ./img2markdown.py --model gpt-4-turbo
    ```
 5. Set "Shell" to `/bin/zsh`
 6. Set "Input" to "None"
@@ -115,5 +124,6 @@ If you encounter errors:
 
 1. **API Key Issues**: Make sure your OpenAI API key is valid and has sufficient quota
 2. **Model Access**: Ensure your OpenAI account has access to the model you're trying to use
-3. **No Image in Clipboard**: Verify you have an image copied to your clipboard
+3. **No Image in Clipboard**: Verify you have an image copied to your clipboard or use the `--file` option
 4. **pngpaste Not Found**: Install pngpaste with `brew install pngpaste`
+5. **Module Import Errors**: Make sure to activate the virtual environment with `source .venv/bin/activate`

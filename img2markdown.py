@@ -52,14 +52,14 @@ def get_image_from_clipboard():
         print("Make sure you have pngpaste installed: brew install pngpaste")
         print("Also ensure you have an image copied to your clipboard.")
         os.unlink(temp_path)
-        sys.exit(1)
+        return None
     
     # Check if the file exists and has content
     if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
         print("No image found in clipboard.")
         print("Please copy an image to your clipboard and try again.")
         os.unlink(temp_path)
-        sys.exit(1)
+        return None
     
     # Read the image file
     try:
@@ -73,7 +73,21 @@ def get_image_from_clipboard():
         print(f"Error reading image file: {e}")
         if os.path.exists(temp_path):
             os.unlink(temp_path)
-        sys.exit(1)
+        return None
+
+
+def get_image_from_file(file_path):
+    """Get image from a file and convert to bytes."""
+    if not os.path.exists(file_path):
+        print(f"Error: File not found: {file_path}")
+        return None
+    
+    try:
+        with open(file_path, 'rb') as img_file:
+            return img_file.read()
+    except IOError as e:
+        print(f"Error reading image file: {e}")
+        return None
 
 
 def encode_image(image_bytes):
@@ -120,7 +134,7 @@ def try_models_in_sequence(base64_image, models, prompt, max_tokens=4096):
     raise Exception(f"All models failed. Last error: {last_error}")
 
 
-def image_to_markdown(base64_image, model=None, fallback=True, prompt=None):
+def image_to_markdown(base64_image, model=None, fallback=True, prompt=None, max_tokens=4096):
     """Send image to OpenAI API and get markdown response."""
     if prompt is None:
         prompt = "Output the contents of the image in markdown format."
@@ -148,7 +162,7 @@ def image_to_markdown(base64_image, model=None, fallback=True, prompt=None):
                         ]
                     }
                 ],
-                max_tokens=4096
+                max_tokens=max_tokens
             )
             return response.choices[0].message.content, model
         else:
@@ -163,7 +177,7 @@ def image_to_markdown(base64_image, model=None, fallback=True, prompt=None):
                 # Use all models in the predefined order
                 models_to_try = VISION_MODELS
             
-            return try_models_in_sequence(base64_image, models_to_try, prompt)
+            return try_models_in_sequence(base64_image, models_to_try, prompt, max_tokens)
     
     except Exception as e:
         print(f"Error calling OpenAI API: {e}")
@@ -179,7 +193,7 @@ def image_to_markdown(base64_image, model=None, fallback=True, prompt=None):
 def save_config(config_path, config):
     """Save configuration to a file."""
     try:
-        with open(config_path, 'w') as f:
+        with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2)
         print(f"Configuration saved to {config_path}")
     except Exception as e:
@@ -192,7 +206,7 @@ def load_config(config_path):
         return {}
     
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
         print(f"Error loading configuration: {e}")
@@ -235,6 +249,16 @@ def parse_arguments():
         action="store_true",
         help="List available models with vision capabilities"
     )
+    parser.add_argument(
+        "--file",
+        type=str,
+        help="Path to image file to use instead of clipboard"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="Path to save markdown output (default: clipboard)"
+    )
     return parser.parse_args()
 
 
@@ -271,8 +295,20 @@ def main():
         }
         save_config(config_path, new_config)
     
-    # Get image from clipboard
-    image_bytes = get_image_from_clipboard()
+    # Get image data
+    image_bytes = None
+    if args.file:
+        print(f"Reading image from file: {args.file}")
+        image_bytes = get_image_from_file(args.file)
+    else:
+        image_bytes = get_image_from_clipboard()
+    
+    # Check if we have image data
+    if not image_bytes:
+        print("No image data found. Please provide an image via clipboard or file.")
+        print("Try using the --file option to specify an image file.")
+        sys.exit(1)
+    
     print(f"Successfully captured image ({len(image_bytes)} bytes)")
     
     # Encode image
@@ -281,18 +317,29 @@ def main():
     
     # Send to OpenAI and get markdown
     markdown_text, used_model = image_to_markdown(
-        base64_image, 
-        model=model, 
-        fallback=fallback, 
-        prompt=prompt
+        base64_image,
+        model=model,
+        fallback=fallback,
+        prompt=prompt,
+        max_tokens=max_tokens
     )
     
-    # Copy markdown to clipboard
-    print("Copying markdown to clipboard...")
-    pyperclip.copy(markdown_text)
+    # Handle output
+    if args.output:
+        try:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                f.write(markdown_text)
+            print(f"Markdown content saved to {args.output}")
+        except Exception as e:
+            print(f"Error saving output file: {e}")
+            sys.exit(1)
+    else:
+        # Copy markdown to clipboard
+        print("Copying markdown to clipboard...")
+        pyperclip.copy(markdown_text)
+        print("Markdown content is now in your clipboard.")
     
     print(f"Done! Used model: {used_model}")
-    print("Markdown content is now in your clipboard.")
     
     # Also print the first few lines of the markdown
     preview_lines = markdown_text.split('\n')[:5]
