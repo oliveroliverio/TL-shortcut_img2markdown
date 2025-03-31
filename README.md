@@ -127,14 +127,33 @@ Your settings are saved in `~/.config/img2markdown/config.json` when you use the
 
 ### Apple Shortcuts Integration
 
-#### Using the Standalone Executable (Recommended)
+#### Using the Wrapper Script (Recommended)
+
+To fix the "exit code 1" error when running in Apple Shortcuts:
+
+1. Open the Shortcuts app on your Mac
+2. Create a new shortcut
+3. Add a "Run Shell Script" action
+4. Enter the full path to the wrapper script:
+   ```bash
+   /full/path/to/shortcut_wrapper.sh --model gpt-4-turbo
+   ```
+5. Set "Shell" to `/bin/zsh`
+6. Set "Input" to "None"
+7. Assign a keyboard shortcut to this Shortcut
+
+The wrapper script ensures proper environment setup and provides detailed logs for troubleshooting in `~/.img2markdown_logs/shortcut_log.txt`.
+
+#### Using the Standalone Executable Directly
+
+If you prefer to use the executable directly (may encounter issues in Shortcuts):
 
 1. Open the Shortcuts app on your Mac
 2. Create a new shortcut
 3. Add a "Run Shell Script" action
 4. Enter the full path to the executable with any desired options:
    ```bash
-   /full/path/to/dist/img2markdown --model gpt-4-turbo
+   cd /full/path/to && ./dist/img2markdown --model gpt-4-turbo
    ```
 5. Set "Shell" to `/bin/zsh`
 6. Set "Input" to "None"
@@ -185,3 +204,5 @@ If you encounter errors:
 4. **pngpaste Not Found**: Install pngpaste with `brew install pngpaste`
 5. **Module Import Errors**: If using the Python script, make sure to activate the virtual environment with `source .venv/bin/activate`
 6. **Executable Permissions**: If you can't run the executable, make sure it has execute permissions with `chmod +x dist/img2markdown`
+7. **Exit Code 1 in Shortcuts**: If you get "exit code 1" when running in Apple Shortcuts, use the provided wrapper script instead of calling the executable directly. The wrapper script handles environment setup and provides detailed logs for troubleshooting.
+8. **Check Debug Logs**: If using the wrapper script, check the logs at `~/.img2markdown_logs/shortcut_log.txt` for detailed error information.
