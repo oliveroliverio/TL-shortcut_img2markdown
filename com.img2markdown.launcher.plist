@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.img2markdown.launcher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>REPLACE_WITH_FULL_PATH/img2markdown_gui.py</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>StandardErrorPath</key>
+    <string>~/.img2markdown_logs/launcher_error.log</string>
+    <key>StandardOutPath</key>
+    <string>~/.img2markdown_logs/launcher_output.log</string>
+    <key>WorkingDirectory</key>
+    <string>REPLACE_WITH_FULL_PATH</string>
+</dict>
+</plist>
