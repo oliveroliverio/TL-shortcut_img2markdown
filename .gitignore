@@ -1,2 +1,11 @@
 # ignore .env file
 .env
+
+# ignore build directory
+build
+
+# ignore dist directory
+dist
+
+# ignore launcher plist file
+com.img2markdown.launcher.plist
