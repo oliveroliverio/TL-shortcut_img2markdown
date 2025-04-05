@@ -25,3 +25,15 @@ This change makes the clipboard output ready for direct pasting into existing ma
   - Uses the example markdown provided as test input
 
 The test ensures that the markdown formatting function works as expected with real-world content.
+
+# 2025-04-04
+## Rebuilt executable with markdown formatting changes
+
+**Files Changed:**
+- `dist/img2markdown`: Rebuilt the executable to incorporate the new `prep_for_pasting()` function
+  - The rebuilt executable now properly formats markdown output for easier pasting
+  - First level headers are converted to third level headers
+  - Second level headers are converted to bold text
+  - Triple backtick markdown designations are removed
+
+This update ensures that the standalone executable provides the same improved formatting as the Python script, making it ready for direct pasting into existing markdown documents.
