@@ -262,6 +262,38 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def prep_for_pasting(markdown_text):
+    """
+    Prepare markdown text for pasting by:
+    1. Converting first level headers to third level headers
+    2. Converting second level headers to bold text
+    3. Removing triple backtick markdown designations
+    """
+    # Remove triple backtick markdown designations at the beginning and end
+    if markdown_text.startswith("```markdown\n"):
+        markdown_text = markdown_text[len("```markdown\n"):]
+    if markdown_text.startswith("```\n"):
+        markdown_text = markdown_text[len("```\n"):]
+    if markdown_text.endswith("\n```"):
+        markdown_text = markdown_text[:-4]
+    
+    # Process lines
+    lines = markdown_text.split('\n')
+    processed_lines = []
+    
+    for line in lines:
+        # Convert first level headers to third level headers
+        if line.startswith("# "):
+            processed_lines.append("### " + line[2:])
+        # Convert second level headers to bold text
+        elif line.startswith("## "):
+            processed_lines.append("**" + line[3:] + "**")
+        else:
+            processed_lines.append(line)
+    
+    return '\n'.join(processed_lines)
+
+
 def main():
     """Main function to process clipboard image and convert to markdown."""
     args = parse_arguments()
@@ -324,11 +356,14 @@ def main():
         max_tokens=max_tokens
     )
     
+    # Prepare markdown for pasting
+    prepared_markdown = prep_for_pasting(markdown_text)
+    
     # Handle output
     if args.output:
         try:
             with open(args.output, 'w', encoding='utf-8') as f:
-                f.write(markdown_text)
+                f.write(prepared_markdown)
             print(f"Markdown content saved to {args.output}")
         except Exception as e:
             print(f"Error saving output file: {e}")
@@ -336,17 +371,17 @@ def main():
     else:
         # Copy markdown to clipboard
         print("Copying markdown to clipboard...")
-        pyperclip.copy(markdown_text)
+        pyperclip.copy(prepared_markdown)
         print("Markdown content is now in your clipboard.")
     
     print(f"Done! Used model: {used_model}")
     
     # Also print the first few lines of the markdown
-    preview_lines = markdown_text.split('\n')[:5]
+    preview_lines = prepared_markdown.split('\n')[:5]
     print("\nPreview of markdown content:")
     for line in preview_lines:
         print(line)
-    if len(preview_lines) < len(markdown_text.split('\n')):
+    if len(preview_lines) < len(prepared_markdown.split('\n')):
         print("...")
 
 
